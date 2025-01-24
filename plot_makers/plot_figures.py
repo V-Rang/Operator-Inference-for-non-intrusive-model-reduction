@@ -17,19 +17,27 @@ def plot_initial_values(S, plot_directory):
     return
 
 
-def plot_sing_vals(S, plot_directory):
+def plot_sing_vals(results, plot_directory):
     if not os.path.exists(plot_directory):
         os.makedirs(plot_directory)
-    S_ref = np.mean(S , axis = 1).reshape(-1, 1).repeat(S.shape[1], axis = 1) # (x, t)
     
+    S = results['S']
+    S_ref = results['S_ref']
+    S_centered = results['S_centered']
+
     S = torch.tensor(S, device = device)
     S_ref = torch.tensor(S_ref, device = device)
-    S_centered = S - S_ref
+    S_centered = torch.tensor(S_centered, device = device)
+
     _, Sigma, _ = torch.svd(S_centered)
 
-    S = S.cpu()
-    S_ref = S_ref.cpu()
-    S_centered = S_centered.cpu()
+    del S
+    del S_ref
+    del S_centered
+    torch.cuda.empty_cache()  # Free up GPU memory
+    # S = S.cpu()
+    # S_ref = S_ref.cpu()
+    # S_centered = S_centered.cpu()
     Sigma = Sigma.cpu()
 
     plt.plot(Sigma)
@@ -39,14 +47,18 @@ def plot_sing_vals(S, plot_directory):
     plt.close()
     return
 
-def plot_snapshot_energy_spectrum(S, regularizer, plot_directory):
+def plot_snapshot_energy_spectrum(results, regularizer, plot_directory):
     if not os.path.exists(plot_directory):
         os.makedirs(plot_directory)
 
-    S_ref = np.mean(S , axis = 1).reshape(-1, 1).repeat(S.shape[1], axis = 1) # (x, t)
+    S = results['S']
+    S_ref = results['S_ref']
+    S_centered = results['S_centered']
+
     S = torch.tensor(S, device = device)
     S_ref = torch.tensor(S_ref, device = device)
-    S_centered = S - S_ref
+    S_centered = torch.tensor(S_centered, device = device)
+
     U, _, _ = torch.svd(S_centered)
 
     S_cent_norm = torch.linalg.norm(S_centered, 'fro').item()
@@ -72,15 +84,19 @@ def plot_snapshot_energy_spectrum(S, regularizer, plot_directory):
         S_quad_reconstr = lin_constr + V_bar @ S_kron
         quad_constr_norms.append(torch.linalg.norm(S_quad_reconstr, 'fro').item()) 
 
+    del S
+    del S_ref
+    del S_centered
+    del U
+    torch.cuda.empty_cache()  # Free up GPU memory
 
-    S = S.cpu()
-    S_ref = S_ref.cpu()
-    S_centered = S_centered.cpu()
-    U =  U.cpu()
+    # S = S.cpu()
+    # S_ref = S_ref.cpu()
+    # S_centered = S_centered.cpu()
+    # U =  U.cpu()
 
     lin_constr_norms[:] = [x / S_cent_norm for x in lin_constr_norms]
     quad_constr_norms[:] = [x / S_cent_norm for x in quad_constr_norms]
-
 
     plt.scatter(np.arange(len(lin_constr_norms)), lin_constr_norms, label = 'Linear Manifold')
     plt.scatter(np.arange(len(quad_constr_norms)), quad_constr_norms, label = 'Quadratic Manifold')
@@ -88,5 +104,5 @@ def plot_snapshot_energy_spectrum(S, regularizer, plot_directory):
     plt.xlabel('Reduced basis dimension r')
     plt.ylabel('Snapshot retained energy')
     plt.savefig(f'{plot_directory}snapshot_energy_spectrum')
-    
+
 

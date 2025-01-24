@@ -31,6 +31,16 @@ def compute_S(S_init: np.array , n_spt: int, n_time: int, c_val: float) -> np.ar
     A = scipy.sparse.diags(diags, [-1, 0, 1], (n_spt, n_spt))
     with opinf.utils.TimedBlock("Full-order solve"):
         S = full_order_solve(A, S_init, t_vals) # (x, t)
+
+    S_ref = np.mean(S , axis = 1).reshape(-1, 1).repeat(S.shape[1], axis = 1) # (x, t)
+    S_centered = S - S_ref
     
-    return S
+    results = {
+        'S': S,
+        'S_ref' : S,
+        'S_centered': S_centered,
+        'FOM_A': A 
+    } 
+
+    return results
 

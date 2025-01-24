@@ -31,11 +31,18 @@ t_vals = np.linspace(0,0.1,n_time)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 S_0 = (1/sqrt( 2e-4 * np.pi)) * np.exp( -( (x_vals - np.repeat([m_val], x_vals.shape))**2/ 2e-4 )  )
-S = compute_S(S_0, n_spt, n_time, c_val)
+results = compute_S(S_0, n_spt, n_time, c_val)
+
+S = results['S']
+S_ref = results['S_ref']
+S_centered = results['S_centered']
+FOM_A = results['FOM_A']
 
 # plot Figure 3.
 plot_initial_values(S, plot_directory)
-plot_sing_vals(S, plot_directory)
+# S_prior = S
+plot_sing_vals(results, plot_directory)
+# print(np.allclose(S, S_prior)) # True
 
 threshold = 0.95
 gamma = 1e9
@@ -45,13 +52,14 @@ linear_reconstr_err, quad_reconstr_err = compute_linear_quadratic_reconstruction
 print('linear reconstruction error:', linear_reconstr_err) 
 print('quadratic reconstruction error:', quad_reconstr_err) 
 
-# errors for rom predictions using new initial condition:
+# errors for rom predictions using new initial condition - Figure 4:
+plot_snapshot_energy_spectrum(results, regularizer, plot_directory)
 
-plot_snapshot_energy_spectrum(S, regularizer, plot_directory)
-
-# non_linear_reconstr_err = 
-
-
+# Fig 5.
+# Linear ROM
+m_test = 0.12547
+S_0_test = (1/sqrt( 2e-4 * np.pi)) * np.exp( -( (x_vals - np.repeat([m_test], x_vals.shape))**2/ 2e-4 )  )
+# S = compute_S(S_0, n_spt, n_time, c_val)
 
 
 # NLDR reconstruction - just send snapshot array and get best sample array.
