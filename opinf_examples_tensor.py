@@ -25,6 +25,11 @@ m_val = 0.10
 
 plot_directory = f'plots_nx{n_spt}_nt{n_time}_c{c_val}_mu{m_val}/'
 
+threshold = 0.95
+gamma = 1e9
+regularizer  = math.sqrt(gamma/2)
+
+
 x_vals = np.linspace(  0, 1, n_spt)
 t_vals = np.linspace(0,0.1,n_time)
 
@@ -37,6 +42,8 @@ S = results['S']
 S_ref = results['S_ref']
 S_centered = results['S_centered']
 FOM_A = results['FOM_A']
+U_svd = results['U_svd']
+Sigma_svd = results['Sigma_svd']
 
 # plot Figure 3.
 plot_initial_values(S, plot_directory)
@@ -44,11 +51,14 @@ plot_initial_values(S, plot_directory)
 plot_sing_vals(results, plot_directory)
 # print(np.allclose(S, S_prior)) # True
 
-threshold = 0.95
-gamma = 1e9
-regularizer  = math.sqrt(gamma/2)
+results_reconstr_errs = compute_linear_quadratic_reconstruction_error(S, threshold, regularizer)
+U_trunc = results_reconstr_errs['U_trunc']
+S_hat = results_reconstr_errs['S_hat']
+S_kron = results_reconstr_errs['S_kron']
+V_bar = results_reconstr_errs['V_bar']
+linear_reconstr_err = results_reconstr_errs['linear_reconstr_err']
+quad_reconstr_err = results_reconstr_errs['quad_reconstr_err']
 
-linear_reconstr_err, quad_reconstr_err = compute_linear_quadratic_reconstruction_error(S, threshold, regularizer)
 print('linear reconstruction error:', linear_reconstr_err) 
 print('quadratic reconstruction error:', quad_reconstr_err) 
 
@@ -59,6 +69,10 @@ plot_snapshot_energy_spectrum(results, regularizer, plot_directory)
 # Linear ROM
 m_test = 0.12547
 S_0_test = (1/sqrt( 2e-4 * np.pi)) * np.exp( -( (x_vals - np.repeat([m_test], x_vals.shape))**2/ 2e-4 )  )
+c_hat = U_svd[:,: ]
+
+
+
 # S = compute_S(S_0, n_spt, n_time, c_val)
 
 

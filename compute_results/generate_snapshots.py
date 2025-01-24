@@ -1,6 +1,9 @@
 import scipy
 import numpy as np
 import opinf
+import torch
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def full_order_solve(A, initial_condition, time_domain):
     '''
@@ -34,13 +37,30 @@ def compute_S(S_init: np.array , n_spt: int, n_time: int, c_val: float) -> np.ar
 
     S_ref = np.mean(S , axis = 1).reshape(-1, 1).repeat(S.shape[1], axis = 1) # (x, t)
     S_centered = S - S_ref
+
+    S_centered = torch.tensor(S_centered, device = device)
+
+    U, Sigma, _ = torch.svd(S_centered)
     
+    U_cpu = U.cpu().numpy()
+    S_centered_cpu = S_centered.cpu().numpy()
+    Sigma_cpu = Sigma.cpu().numpy()
+
+    del S_centered
+    del U
+    del Sigma
+    torch.cuda.empty_cache()  # Free up GPU memory
+
+
     results = {
         'S': S,
         'S_ref' : S,
-        'S_centered': S_centered,
-        'FOM_A': A 
+        'S_centered': S_centered_cpu,
+        'FOM_A': A,
+        'U_svd': U_cpu,
+        'Sigma_svd': Sigma_cpu
     } 
+
 
     return results
 
