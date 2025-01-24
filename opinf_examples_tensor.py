@@ -1,0 +1,76 @@
+# aim:
+'''
+Generate data for other problems for which the quad. manifold method can be compared to the RL NLDR approach.
+Code using torch.tensor so the ops can be done on GPU for the original big example (2^12 x 2000).
+'''
+
+import math
+from math import sqrt
+import numpy as np
+import opinf
+import matplotlib.pyplot as plt
+import scipy
+import torch
+import os
+from compute_results.generate_snapshots import compute_S
+from compute_results.reconstruction_errors import compute_linear_quadratic_reconstruction_error
+from plot_makers.plot_figures import plot_initial_values, plot_sing_vals, plot_snapshot_energy_spectrum
+
+n_spt = 2**6
+n_time = 20
+# n_spt = 2**12
+# n_time = 2000
+c_val = 10
+m_val = 0.10
+
+plot_directory = f'plots_nx{n_spt}_nt{n_time}_c{c_val}_mu{m_val}/'
+
+x_vals = np.linspace(  0, 1, n_spt)
+t_vals = np.linspace(0,0.1,n_time)
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+S_0 = (1/sqrt( 2e-4 * np.pi)) * np.exp( -( (x_vals - np.repeat([m_val], x_vals.shape))**2/ 2e-4 )  )
+S = compute_S(S_0, n_spt, n_time, c_val)
+
+# plot Figure 3.
+plot_initial_values(S, plot_directory)
+plot_sing_vals(S, plot_directory)
+
+threshold = 0.95
+gamma = 1e9
+regularizer  = math.sqrt(gamma/2)
+
+linear_reconstr_err, quad_reconstr_err = compute_linear_quadratic_reconstruction_error(S, threshold, regularizer)
+print('linear reconstruction error:', linear_reconstr_err) 
+print('quadratic reconstruction error:', quad_reconstr_err) 
+
+# errors for rom predictions using new initial condition:
+
+plot_snapshot_energy_spectrum(S, regularizer, plot_directory)
+
+# non_linear_reconstr_err = 
+
+
+
+
+# NLDR reconstruction - just send snapshot array and get best sample array.
+
+# moving ROM forward in time for different input parameters:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
