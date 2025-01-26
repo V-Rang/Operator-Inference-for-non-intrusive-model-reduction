@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from utils.tools import ckron
+from utils.tools import ckron_tensor
 
 
 # convert all numpy arrays to torch tensors for faster computation on gpu.
@@ -65,7 +65,7 @@ def compute_linear_quadratic_reconstruction_error(S: np.array, threshold : float
     linear_reconstr_err = torch.linalg.norm(S_centered - S_linear_reconstr, 'fro')/torch.linalg.norm(S_centered, 'fro') # 11.
     
     # quadratic reconstruction error:
-    S_kron = ckron(S_hat) # 12.
+    S_kron = ckron_tensor(S_hat) # 12.
     D_mat = S_kron.T # 13.
     Z_mat = S_centered - U_trunc @ S_hat # 14.
     
@@ -92,7 +92,7 @@ def compute_linear_quadratic_reconstruction_error(S: np.array, threshold : float
     del DS_matrix_inv, V_bar, S_quad_reconstr, linear_reconstr_err, quad_reconstr_err
 
     torch.cuda.empty_cache()  # Free up GPU memory
-
+    # print(linear_reconstr_err_cpu, ":", quad_reconstr_err_cpu)
     # results
     results = {
         'U_trunc': U_trunc_cpu,

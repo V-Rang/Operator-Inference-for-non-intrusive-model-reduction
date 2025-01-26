@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import torch
-from utils.tools import ckron
+from utils.tools import ckron_tensor
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -70,7 +70,7 @@ def plot_snapshot_energy_spectrum(results, regularizer, plot_directory):
         lin_constr = U_trunc @ S_hat
         lin_constr_norms.append(torch.linalg.norm(lin_constr, 'fro').item()) 
 
-        S_kron = ckron(S_hat)
+        S_kron = ckron_tensor(S_hat)
         D_mat = S_kron.T
         Z_mat = S_centered - lin_constr
     

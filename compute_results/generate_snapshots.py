@@ -2,21 +2,10 @@ import scipy
 import numpy as np
 import opinf
 import torch
+from compute_results.solvers import full_order_solve
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def full_order_solve(A, initial_condition, time_domain):
-    '''
-    Solve ivp to move the initial condition forward in time subject 
-    to spatial and temporal domain.
-    '''
-    return scipy.integrate.solve_ivp(
-        fun=lambda t, s: A @ s,
-        t_span=[time_domain[0], time_domain[-1]],
-        y0=initial_condition,
-        t_eval=time_domain,
-        method="BDF",
-    ).y
 
 
 def compute_S(S_init: np.array , n_spt: int, n_time: int, c_val: float) -> np.array:
