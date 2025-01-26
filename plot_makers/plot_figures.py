@@ -104,5 +104,28 @@ def plot_snapshot_energy_spectrum(results, regularizer, plot_directory):
     plt.xlabel('Reduced basis dimension r')
     plt.ylabel('Snapshot retained energy')
     plt.savefig(f'{plot_directory}snapshot_energy_spectrum')
+    plt.close()
 
+def plot_model_results(model_results, time_vals_global, t_instances, plot_directory):
+    fom_results = model_results['FOM_reconstruction']
+    linear_rom_results = model_results['Linear_ROM_reconstruction']
+    quadratic_rom_results = model_results['Quadratic_ROM_reconstruction']
 
+    indices = []
+    for i in range(len(t_instances)):
+        index = np.argmin( abs(time_vals_global - t_instances[i]* np.ones(len(time_vals_global))))
+        indices.append(index)
+
+    for index in indices:
+        time_val = time_vals_global[index] 
+        plt.scatter(np.arange(len(fom_results[:,0])), fom_results[:,index], label = 'Exact', color = 'k')
+        plt.plot( linear_rom_results[:,index], label = 'Linear ROM', color = 'b')
+        plt.plot( quadratic_rom_results[:,index], label = 'Quadratic ROM', color = 'r')
+        plt.legend()
+        plt.xlabel('x-coordinate')
+        plt.ylabel('solution s(x, t)')
+        plt.title(f'Values at time = {time_val}')
+        plt.savefig(f'{plot_directory}FOM_ROM_test_{time_val}.png')
+        plt.close()
+        
+    return None

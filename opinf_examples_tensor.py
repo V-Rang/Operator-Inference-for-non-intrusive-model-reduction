@@ -93,7 +93,28 @@ with opinf.utils.TimedBlock("Linear ROM solve"):
 with opinf.utils.TimedBlock("Quadratic ROM solve"):
     S_rom_quad_test = quad_rom_solve(c_hat, A_hat, H_hat, s_0_test, t_test_vals)
 
+S_rom_linear_test = U_trunc @ S_rom_lin_test
+S_rom_quadratic_test = U_trunc @ S_rom_quad_test
 
+model_results = {
+    'FOM_reconstruction': S_fom_test,
+    'Linear_ROM_reconstruction': S_rom_linear_test,
+    'Quadratic_ROM_reconstruction': S_rom_quadratic_test
+}
+
+time_instances = [0.02, 0.04, 0.06, 0.08]
+
+from plot_makers.plot_figures import plot_model_results
+plot_model_results(model_results, t_test_vals, time_instances, plot_directory)
+
+
+# print(S_fom_test.shape, ":", S_rom_linear_test.shape, ":", S_rom_quadratic_test.shape)
+
+# plots for Figure 5.
+# print(t_test_vals)
+# t_instances = [0.02, 0.04, 0.06, 0.08]
+# index = np.argmin( abs(t_test_vals - t_instances[0]* np.ones(len(t_test_vals))))
+# print(index, ":", t_test_vals[index])
 
 
 # 1. FOM
