@@ -46,8 +46,6 @@ S = results['S']
 S_ref = results['S_ref']
 S_centered = results['S_centered']
 FOM_A = results['FOM_A']
-U_svd = results['U_svd']
-Sigma_svd = results['Sigma_svd']
 
 # plot Figure 3.
 plot_initial_values(S, plot_directory)
@@ -68,7 +66,7 @@ quad_reconstr_err = results_reconstr_errs['quad_reconstr_err']
 print('linear reconstruction error:', linear_reconstr_err) 
 print('quadratic reconstruction error:', quad_reconstr_err) 
 
-# errors for rom predictions using new initial condition - Figure 4:
+# Fig 4: errors for rom predictions using new initial condition:
 plot_snapshot_energy_spectrum(results, regularizer, plot_directory)
 
 # Fig 5.
@@ -125,8 +123,8 @@ plot_model_results(model_results, x_vals, t_test_vals, time_instances, plot_dire
 # Later.
 
 # relative error computation:
-fom_linear_rel_err, fom_quadratic_rel_err = relative_err_computation(model_results)
-print(fom_linear_rel_err, ":", fom_quadratic_rel_err)
+# fom_linear_rel_err, fom_quadratic_rel_err = relative_err_computation(model_results)
+# print(fom_linear_rel_err, ":", fom_quadratic_rel_err)
 
 # uptill now compare results with RL_NLDR.
 

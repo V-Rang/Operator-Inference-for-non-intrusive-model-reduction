@@ -90,6 +90,10 @@ def plot_snapshot_energy_spectrum(results, regularizer, plot_directory):
 
         S_quad_reconstr = lin_constr + V_bar @ S_kron
         quad_constr_norms.append(torch.linalg.norm(S_quad_reconstr, 'fro').item()**2)  # VS_hat + V_bar[S_hat \ckron S_hat]
+        
+        # for NLDR:
+        # for each r, have to compute the best selection array
+
 
     del S
     del S_ref

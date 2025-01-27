@@ -31,9 +31,7 @@ def compute_S(S_init: np.array , n_spt: int, n_time: int, c_val: float) -> np.ar
 
     U, Sigma, _ = torch.svd(S_centered)
     
-    U_cpu = U.cpu().numpy()
     S_centered_cpu = S_centered.cpu().numpy()
-    Sigma_cpu = Sigma.cpu().numpy()
 
     del S_centered
     del U
@@ -45,9 +43,7 @@ def compute_S(S_init: np.array , n_spt: int, n_time: int, c_val: float) -> np.ar
         'S': S,
         'S_ref' : S,
         'S_centered': S_centered_cpu,
-        'FOM_A': A,
-        'U_svd': U_cpu,
-        'Sigma_svd': Sigma_cpu
+        'FOM_A': A
     } 
 
 
