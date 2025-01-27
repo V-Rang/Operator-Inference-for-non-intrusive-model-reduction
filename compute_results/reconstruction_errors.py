@@ -1,16 +1,17 @@
 import torch
 import numpy as np
 from utils.tools import ckron_tensor
-
+from math import sqrt
 
 # convert all numpy arrays to torch tensors for faster computation on gpu.
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def compute_linear_quadratic_reconstruction_error(S: np.array, threshold : float, regularizer: float) -> float:
+def compute_linear_quadratic_reconstruction_error(S: np.array, threshold : float, regularizer: float, number_trunc_modes = 10) -> float:
     '''
     Inputs: 
     S (snapshot matrix)
     threshold: value to decide number of SVD modes to retain (described below).
+    num_trunc_modes: If instead of threshold, you want to specify the actual number of modes desired.
     regularizer: value to be used in the computation of V_bar in quadratic reconstruction (described below). 
 
 
@@ -104,3 +105,26 @@ def compute_linear_quadratic_reconstruction_error(S: np.array, threshold : float
     }
 
     return results
+
+
+def relative_err_computation(model_results):
+    S_fom = model_results['FOM_reconstruction']
+    S_rom_linear = model_results['Linear_ROM_reconstruction']
+    S_rom_quadratic = model_results['Quadratic_ROM_reconstruction']
+
+    num_fom_linear = 0.
+    num_fom_quadratic = 0.
+    den = 0.
+
+    for i in range(S_fom.shape[1]): # iterating through time
+        den += np.linalg.norm(S_fom[:,i],2)**2
+        num_fom_linear += np.linalg.norm( S_fom[:,i] - S_rom_linear[:,i], 2)**2
+        num_fom_quadratic += np.linalg.norm( S_fom[:,i] - S_rom_quadratic[:,i], 2)**2
+
+    rel_err_fom_linear = sqrt( num_fom_linear/den)
+    rel_err_fom_quadratic = sqrt( num_fom_quadratic/den)
+
+
+    return rel_err_fom_linear, rel_err_fom_quadratic
+
+

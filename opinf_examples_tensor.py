@@ -18,7 +18,7 @@ from plot_makers.plot_figures import plot_initial_values, plot_sing_vals, plot_s
 from plot_makers.plot_figures import plot_comparison_FOM_ROM
 
 from compute_results.solvers import full_order_solve, linear_rom_solve, quad_rom_solve
-
+from compute_results.reconstruction_errors import relative_err_computation
 n_spt = 2**6
 n_time = 20
 # n_spt = 2**12
@@ -28,12 +28,11 @@ m_val = 0.10
 
 plot_directory = f'plots_nx{n_spt}_nt{n_time}_c{c_val}_mu{m_val}/'
 
-threshold = 1.
+threshold = 1. # fraction of cumulative energy needed in Linear ROM.
 gamma = 1e9
 regularizer  = math.sqrt(gamma/2)
 
-
-x_vals = np.linspace(  0, 1, n_spt)
+x_vals = np.linspace(0, 1, n_spt)
 t_vals = np.linspace(0,0.1,n_time)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -112,7 +111,17 @@ plot_model_results(model_results, x_vals, t_test_vals, time_instances, plot_dire
 # Fig 6. Using r = 15
 # print(U_trunc.shape) # r = 19 here.
 # For Fig 7., need to change 'r' in U_trunc, before computing the model_results.
-plot_comparison_FOM_ROM(model_results, x_vals, t_test_vals, plot_directory)
+# plot_comparison_FOM_ROM(model_results, x_vals, t_test_vals, plot_directory)
+
+# Fig 8.
+# Later.
+
+# relative error computation:
+fom_linear_rel_err, fom_quadratic_rel_err = relative_err_computation(model_results)
+
+
+
+# uptill now compare results with RL_NLDR.
 
 
 
