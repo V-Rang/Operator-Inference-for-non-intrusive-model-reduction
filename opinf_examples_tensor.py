@@ -19,6 +19,8 @@ from plot_makers.plot_figures import plot_comparison_FOM_ROM
 
 from compute_results.solvers import full_order_solve, linear_rom_solve, quad_rom_solve
 from compute_results.reconstruction_errors import relative_err_computation
+from utils.tools import compute_Utrunc_Vbar_given_truncdim
+
 n_spt = 2**6
 n_time = 20
 # n_spt = 2**12
@@ -53,6 +55,8 @@ plot_initial_values(S, plot_directory)
 plot_sing_vals(results, plot_directory)
 # print(np.allclose(S, S_prior)) # True
 
+
+# independent of Figures, just for my info.
 results_reconstr_errs = compute_linear_quadratic_reconstruction_error(S, threshold, regularizer)
 U_trunc = results_reconstr_errs['U_trunc']
 S_hat = results_reconstr_errs['S_hat']
@@ -74,6 +78,10 @@ S_0_test = (1/sqrt( 2e-4 * np.pi)) * np.exp( -( (x_vals - np.repeat([m_test], x_
 t_test_vals = np.arange(0, 0.08+1e-6, 1e-6)
 
 # opinf requires numpy arrays:
+# S known, given r, compute U_trunc, V_bar
+trunc_dim = 29
+U_trunc, V_bar = compute_Utrunc_Vbar_given_truncdim(S, S_ref, regularizer, trunc_dim)
+
 c_hat = U_trunc.T @ FOM_A @ S_ref[:,0] # (r, 1)
 A_hat = U_trunc.T @ FOM_A @ U_trunc # (r, r)
 H_hat = U_trunc.T @ FOM_A @ V_bar #(r, r^2)
@@ -118,8 +126,7 @@ plot_model_results(model_results, x_vals, t_test_vals, time_instances, plot_dire
 
 # relative error computation:
 fom_linear_rel_err, fom_quadratic_rel_err = relative_err_computation(model_results)
-
-
+print(fom_linear_rel_err, ":", fom_quadratic_rel_err)
 
 # uptill now compare results with RL_NLDR.
 

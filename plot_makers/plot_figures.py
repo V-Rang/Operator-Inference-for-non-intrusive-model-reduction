@@ -27,9 +27,11 @@ def plot_sing_vals(results, plot_directory):
 
     S = torch.tensor(S, device = device)
     S_ref = torch.tensor(S_ref, device = device)
-    S_centered = torch.tensor(S_centered, device = device)
 
+    S_centered = torch.tensor(S_centered, device = device)
     _, Sigma, _ = torch.svd(S_centered)
+    Sigma /= Sigma.max()
+
     del S
     del S_ref
     del S_centered
@@ -66,14 +68,14 @@ def plot_snapshot_energy_spectrum(results, regularizer, plot_directory):
 
     U, _, _ = torch.svd(S_centered)
 
-    S_cent_norm = torch.linalg.norm(S_centered, 'fro').item()
+    S_cent_norm = torch.linalg.norm(S_centered, 'fro').item()**2
     lin_constr_norms, quad_constr_norms = [], []
     
     for r_val in range(1,S_centered.shape[1]):
         U_trunc = U[: , : r_val]
         S_hat = U_trunc.T @ S_centered
-        lin_constr = U_trunc @ S_hat
-        lin_constr_norms.append(torch.linalg.norm(lin_constr, 'fro').item()) 
+        lin_constr = U_trunc @ S_hat # VS_hat
+        lin_constr_norms.append(torch.linalg.norm(lin_constr, 'fro').item()**2) 
 
         S_kron = ckron_tensor(S_hat)
         D_mat = S_kron.T
@@ -87,7 +89,7 @@ def plot_snapshot_energy_spectrum(results, regularizer, plot_directory):
         V_bar = Z_mat @ DU_matrix @ torch.diag(DS_matrix_inv) @ DYt_matrix
 
         S_quad_reconstr = lin_constr + V_bar @ S_kron
-        quad_constr_norms.append(torch.linalg.norm(S_quad_reconstr, 'fro').item()) 
+        quad_constr_norms.append(torch.linalg.norm(S_quad_reconstr, 'fro').item()**2)  # VS_hat + V_bar[S_hat \ckron S_hat]
 
     del S
     del S_ref
