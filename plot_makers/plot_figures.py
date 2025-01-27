@@ -30,7 +30,6 @@ def plot_sing_vals(results, plot_directory):
     S_centered = torch.tensor(S_centered, device = device)
 
     _, Sigma, _ = torch.svd(S_centered)
-
     del S
     del S_ref
     del S_centered
@@ -42,6 +41,12 @@ def plot_sing_vals(results, plot_directory):
 
     plt.plot(Sigma)
     plt.xlabel('singular value index')
+
+    ticks = np.arange(0, len(Sigma)+1, 10)
+    labels = ticks
+    plt.xticks(ticks=ticks, labels=np.round(labels, 2)) 
+    plt.xlim(0, len(Sigma) )
+
     plt.ylabel('normalized singular values')
     plt.savefig(f'{plot_directory}normalized_sing_vals')
     plt.close()
@@ -88,7 +93,7 @@ def plot_snapshot_energy_spectrum(results, regularizer, plot_directory):
     del S_ref
     del S_centered
     del U
-    torch.cuda.empty_cache()  # Free up GPU memory
+    torch.cuda.empty_cache() 
 
     # S = S.cpu()
     # S_ref = S_ref.cpu()
@@ -106,7 +111,7 @@ def plot_snapshot_energy_spectrum(results, regularizer, plot_directory):
     plt.savefig(f'{plot_directory}snapshot_energy_spectrum')
     plt.close()
 
-def plot_model_results(model_results, time_vals_global, t_instances, plot_directory):
+def plot_model_results(model_results, xvals_global, time_vals_global, t_instances, plot_directory):
     fom_results = model_results['FOM_reconstruction']
     linear_rom_results = model_results['Linear_ROM_reconstruction']
     quadratic_rom_results = model_results['Quadratic_ROM_reconstruction']
@@ -122,6 +127,12 @@ def plot_model_results(model_results, time_vals_global, t_instances, plot_direct
         plt.plot( linear_rom_results[:,index], label = 'Linear ROM', color = 'b')
         plt.plot( quadratic_rom_results[:,index], label = 'Quadratic ROM', color = 'r')
         plt.legend()
+        
+        ticks = np.linspace(0, len(linear_rom_results[:, index]) - 1, 6)  # Positions
+        labels = np.linspace(0, 1, 6)  # Labels (0, 0.2, 0.4, 0.6, 0.8, 1)
+        plt.xticks(ticks=ticks, labels=np.round(labels, 2))  # Round labels for neatness
+        plt.xlim(0, len(linear_rom_results[:,index]) - 1)
+
         plt.xlabel('x-coordinate')
         plt.ylabel('solution s(x, t)')
         plt.title(f'Values at time = {time_val}')
@@ -129,3 +140,38 @@ def plot_model_results(model_results, time_vals_global, t_instances, plot_direct
         plt.close()
         
     return None
+
+
+def plot_comparison_FOM_ROM(model_results, x_vals, t_vals, plot_directory):
+    S_fom = model_results['FOM_reconstruction']
+    S_linear_rom = model_results['Linear_ROM_reconstruction']
+    S_quadratic_rom = model_results['Quadratic_ROM_reconstruction']
+
+    compare_folder = f'FOM_ROM_compare_{x_vals[0]}-{x_vals[-1]}_{t_vals[0]}-{t_vals[-1]}/'
+    compare_directory = plot_directory + compare_folder
+
+    if not os.path.exists(compare_directory):
+        os.makedirs(compare_directory)
+
+    fig, (ax1,ax2,ax3) = plt.subplots(1,3, figsize = (15,5))
+    fig.subplots_adjust(wspace=0.5) 
+
+    fig.suptitle('Comparison of time evolution of FOM and ROMs.')
+    pc1 = ax1.pcolormesh(x_vals, t_vals, S_fom.T, shading='auto', cmap='viridis')  # Transpose data for correct orientation
+    ax1.set_xlabel("FOM")
+    ax1.set_ylabel("Time (t-values)")
+
+    pc2 = ax2.pcolormesh(x_vals, t_vals, S_linear_rom.T, shading='auto', cmap='viridis')  # Transpose data for correct orientation
+    ax2.set_xlabel("Linear ROM")
+
+    pc3 = ax3.pcolormesh(x_vals, t_vals, S_quadratic_rom.T, shading='auto', cmap='viridis')  # Transpose data for correct orientation
+    ax3.set_xlabel("Quadratic ROM")
+
+    fig.colorbar(pc1, ax=ax1, orientation='horizontal', fraction=0.046, pad=0.1)
+    fig.colorbar(pc2, ax=ax2, orientation='horizontal', fraction=0.046, pad=0.1)
+    fig.colorbar(pc3, ax=ax3, orientation='horizontal', fraction=0.046, pad=0.1)
+
+
+    plt.savefig(f'{compare_directory}compare_time_evolution.png')
+
+

@@ -15,6 +15,7 @@ import os
 from compute_results.generate_snapshots import compute_S
 from compute_results.reconstruction_errors import compute_linear_quadratic_reconstruction_error
 from plot_makers.plot_figures import plot_initial_values, plot_sing_vals, plot_snapshot_energy_spectrum
+from plot_makers.plot_figures import plot_comparison_FOM_ROM
 
 from compute_results.solvers import full_order_solve, linear_rom_solve, quad_rom_solve
 
@@ -27,7 +28,7 @@ m_val = 0.10
 
 plot_directory = f'plots_nx{n_spt}_nt{n_time}_c{c_val}_mu{m_val}/'
 
-threshold = 0.95
+threshold = 1.
 gamma = 1e9
 regularizer  = math.sqrt(gamma/2)
 
@@ -83,7 +84,6 @@ s_0_test = U_trunc.T @ S_0_test
 from utils.tools import ckron_numpy
 s_0_test_kron = ckron_numpy(s_0_test)
 
-
 with opinf.utils.TimedBlock("Full-order solve"):
     S_fom_test = full_order_solve(FOM_A, S_0_test, t_test_vals) # (x, t)
 
@@ -102,10 +102,29 @@ model_results = {
     'Quadratic_ROM_reconstruction': S_rom_quadratic_test
 }
 
+# Fig 5. time vals to compare FOM, ROM.
 time_instances = [0.02, 0.04, 0.06, 0.08]
 
 from plot_makers.plot_figures import plot_model_results
-plot_model_results(model_results, t_test_vals, time_instances, plot_directory)
+plot_model_results(model_results, x_vals, t_test_vals, time_instances, plot_directory)
+
+#***************************
+# Fig 6. Using r = 15
+# print(U_trunc.shape) # r = 19 here.
+# For Fig 7., need to change 'r' in U_trunc, before computing the model_results.
+plot_comparison_FOM_ROM(model_results, x_vals, t_test_vals, plot_directory)
+
+
+
+# plt.figure(figsize=(8, 6))
+# plt.pcolormesh(x_vals, t_test_vals, S_rom_linear_test.T, shading='auto', cmap='viridis')  # Transpose data for correct orientation
+# plt.colorbar(label="Variable Value")  # Add a color bar
+
+# # Add labels and title
+# plt.xlabel("Space (x-values)")
+# plt.ylabel("Time (t-values)")
+# plt.title("Space-Time Evolution of the Variable")
+# plt.savefig('test_fig.png')
 
 
 # print(S_fom_test.shape, ":", S_rom_linear_test.shape, ":", S_rom_quadratic_test.shape)
