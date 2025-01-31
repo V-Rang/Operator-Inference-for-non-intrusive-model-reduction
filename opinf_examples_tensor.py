@@ -22,7 +22,7 @@ from compute_results.reconstruction_errors import relative_err_computation
 from utils.tools import compute_Utrunc_Vbar_given_truncdim
 
 n_spt = 2**6
-n_time = 20
+n_time = 2000
 # n_spt = 2**12
 # n_time = 2000
 c_val = 10
@@ -50,68 +50,68 @@ FOM_A = results['FOM_A']
 # plot Figure 3.
 plot_initial_values(S, plot_directory)
 # S_prior = S
-plot_sing_vals(results, plot_directory)
-# print(np.allclose(S, S_prior)) # True
+# plot_sing_vals(results, plot_directory)
+# # print(np.allclose(S, S_prior)) # True
 
 
-# independent of Figures, just for my info.
-results_reconstr_errs = compute_linear_quadratic_reconstruction_error(S, threshold, regularizer)
-U_trunc = results_reconstr_errs['U_trunc']
-S_hat = results_reconstr_errs['S_hat']
-S_kron = results_reconstr_errs['S_kron']
-V_bar = results_reconstr_errs['V_bar']
-linear_reconstr_err = results_reconstr_errs['linear_reconstr_err']
-quad_reconstr_err = results_reconstr_errs['quad_reconstr_err']
+# # independent of Figures, just for my info.
+# results_reconstr_errs = compute_linear_quadratic_reconstruction_error(S, threshold, regularizer)
+# U_trunc = results_reconstr_errs['U_trunc']
+# S_hat = results_reconstr_errs['S_hat']
+# S_kron = results_reconstr_errs['S_kron']
+# V_bar = results_reconstr_errs['V_bar']
+# linear_reconstr_err = results_reconstr_errs['linear_reconstr_err']
+# quad_reconstr_err = results_reconstr_errs['quad_reconstr_err']
 
-print('linear reconstruction error:', linear_reconstr_err) 
-print('quadratic reconstruction error:', quad_reconstr_err) 
+# print('linear reconstruction error:', linear_reconstr_err) 
+# print('quadratic reconstruction error:', quad_reconstr_err) 
 
-# Fig 4: errors for rom predictions using new initial condition:
-plot_snapshot_energy_spectrum(results, regularizer, plot_directory)
+# # Fig 4: errors for rom predictions using new initial condition:
+# plot_snapshot_energy_spectrum(results, regularizer, plot_directory)
 
-# Fig 5.
-# Linear ROM
-m_test = 0.12547
-S_0_test = (1/sqrt( 2e-4 * np.pi)) * np.exp( -( (x_vals - np.repeat([m_test], x_vals.shape))**2/ 2e-4 )  )
-t_test_vals = np.arange(0, 0.08+1e-6, 1e-6)
+# # Fig 5.
+# # Linear ROM
+# m_test = 0.12547
+# S_0_test = (1/sqrt( 2e-4 * np.pi)) * np.exp( -( (x_vals - np.repeat([m_test], x_vals.shape))**2/ 2e-4 )  )
+# t_test_vals = np.arange(0, 0.08+1e-6, 1e-6)
 
-# opinf requires numpy arrays:
-# S known, given r, compute U_trunc, V_bar
-trunc_dim = 29
-U_trunc, V_bar = compute_Utrunc_Vbar_given_truncdim(S, S_ref, regularizer, trunc_dim)
+# # opinf requires numpy arrays:
+# # S known, given r, compute U_trunc, V_bar
+# trunc_dim = 29
+# U_trunc, V_bar = compute_Utrunc_Vbar_given_truncdim(S, S_ref, regularizer, trunc_dim)
 
-c_hat = U_trunc.T @ FOM_A @ S_ref[:,0] # (r, 1)
-A_hat = U_trunc.T @ FOM_A @ U_trunc # (r, r)
-H_hat = U_trunc.T @ FOM_A @ V_bar #(r, r^2)
+# c_hat = U_trunc.T @ FOM_A @ S_ref[:,0] # (r, 1)
+# A_hat = U_trunc.T @ FOM_A @ U_trunc # (r, r)
+# H_hat = U_trunc.T @ FOM_A @ V_bar #(r, r^2)
 
-s_0_test = U_trunc.T @ S_0_test
+# s_0_test = U_trunc.T @ S_0_test
 
-from utils.tools import ckron_numpy
-s_0_test_kron = ckron_numpy(s_0_test)
+# from utils.tools import ckron_numpy
+# s_0_test_kron = ckron_numpy(s_0_test)
 
-with opinf.utils.TimedBlock("Full-order solve"):
-    S_fom_test = full_order_solve(FOM_A, S_0_test, t_test_vals) # (x, t)
+# with opinf.utils.TimedBlock("Full-order solve"):
+#     S_fom_test = full_order_solve(FOM_A, S_0_test, t_test_vals) # (x, t)
 
-with opinf.utils.TimedBlock("Linear ROM solve"):
-    S_rom_lin_test = linear_rom_solve(c_hat, A_hat, s_0_test, t_test_vals)
+# with opinf.utils.TimedBlock("Linear ROM solve"):
+#     S_rom_lin_test = linear_rom_solve(c_hat, A_hat, s_0_test, t_test_vals)
 
-with opinf.utils.TimedBlock("Quadratic ROM solve"):
-    S_rom_quad_test = quad_rom_solve(c_hat, A_hat, H_hat, s_0_test, t_test_vals)
+# with opinf.utils.TimedBlock("Quadratic ROM solve"):
+#     S_rom_quad_test = quad_rom_solve(c_hat, A_hat, H_hat, s_0_test, t_test_vals)
 
-S_rom_linear_test = U_trunc @ S_rom_lin_test
-S_rom_quadratic_test = U_trunc @ S_rom_quad_test
+# S_rom_linear_test = U_trunc @ S_rom_lin_test
+# S_rom_quadratic_test = U_trunc @ S_rom_quad_test
 
-model_results = {
-    'FOM_reconstruction': S_fom_test,
-    'Linear_ROM_reconstruction': S_rom_linear_test,
-    'Quadratic_ROM_reconstruction': S_rom_quadratic_test
-}
+# model_results = {
+#     'FOM_reconstruction': S_fom_test,
+#     'Linear_ROM_reconstruction': S_rom_linear_test,
+#     'Quadratic_ROM_reconstruction': S_rom_quadratic_test
+# }
 
-# Fig 5. time vals to compare FOM, ROM.
-time_instances = [0.02, 0.04, 0.06, 0.08]
+# # Fig 5. time vals to compare FOM, ROM.
+# time_instances = [0.02, 0.04, 0.06, 0.08]
 
-from plot_makers.plot_figures import plot_model_results
-plot_model_results(model_results, x_vals, t_test_vals, time_instances, plot_directory)
+# from plot_makers.plot_figures import plot_model_results
+# plot_model_results(model_results, x_vals, t_test_vals, time_instances, plot_directory)
 
 #***************************
 # Fig 6. Using r = 15
